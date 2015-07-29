@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -70,6 +71,18 @@ public class MainActivity extends ActionBarActivity {
             requesters.add(from);
             aa.notifyDataSetChanged();
             lock.unlock();
+
+            //check for auto-responder
+            String preferenceName = getString(R.string.user_preferences);
+            SharedPreferences prefs = getSharedPreferences(preferenceName, 0);
+
+            boolean autoRespond = prefs.getBoolean(AutoResponder.autoResponsePref, false);
+
+            if(autoRespond){
+                String respondText = prefs.getString(AutoResponder.responseTextPref, AutoResponder.defaultResponseText);
+                boolean includeLoc = prefs.getBoolean(AutoResponder.includeLocPref, false);
+                respond(from, respondText, includeLoc);
+            }
         }
     }
 
@@ -133,7 +146,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void startAutoResponder() {
-
+        startActivityForResult(new Intent(MainActivity.this, AutoResponder.class), 0);
     }
 
     private void respond(boolean ok, boolean includeLocation) {
